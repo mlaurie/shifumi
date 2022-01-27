@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
 
     const[values, setValues] = useState({username:"", password:""})
+    const navigate = useNavigate();
 
     function handleChange(e) {
         setValues({ ...values, [e.target.name]: e.target.value });
@@ -20,8 +22,8 @@ function Login() {
             .then((response) => response.json())
             .then((data) => {
                 if (data.token) {
-                    localStorage.setItem("user", JSON.stringify(data));
-                    window.location.pathname = "/match";
+                    localStorage.setItem("token", data.token);
+                    navigate('/matches');
                 }
             }) 
     }
@@ -41,7 +43,7 @@ function Login() {
                         <input type="password" name="password" className="text-black bg-indigo-50 px-4 py-2 outline-none rounded-md w-full" value={values.password} onChange={handleChange}/>
                     </div>
                 </div>
-                <input type="submit" className="hover:cursor-pointer mt-4 w-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-indigo-100 py-2 rounded-md text-lg tracking-wide" value="Login" />
+                <input type="submit" className="hover:cursor-pointer hover:scale-110 hover:duration-150 mt-4 w-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-indigo-100 py-2 rounded-md text-lg tracking-wide" value="Login" />
             </div>
         </form>
     );
