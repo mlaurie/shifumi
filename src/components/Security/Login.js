@@ -22,6 +22,7 @@ function Login() {
             .then((response) => response.json())
             .then((data) => {
                 if (data.token) {
+                    localStorage.setItem("username", values.username);
                     localStorage.setItem("token", data.token);
                     navigate('/matches');
                 }

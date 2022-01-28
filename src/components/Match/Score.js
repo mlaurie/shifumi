@@ -3,14 +3,13 @@ import { useState, useEffect } from "react";
 
 function Score() {
   const { id } = useParams();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isDataLoading, setDataLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [turns, setTurns] = useState();
   const [user1, setUser1] = useState();
   const [user2, setUser2] = useState();
+  const [winner, setWinner] = useState();
 
   useEffect(() => {
-    setDataLoading(true)
     fetch(`http://fauques.freeboxos.fr:3000/matches/${id}`, {
       method: "GET",
       headers: {
@@ -23,7 +22,8 @@ function Score() {
         setUser1(match.user1.username)
         setUser2(match.user2.username)
         setTurns(match.turns)
-        setDataLoading(false)
+        match.turns.length === 0 && setIsVisible(false)
+        match.winner && typeof match.winner !== "undefined" && setWinner(match.winner.username)
       })
       .catch((error) => console.log(error))
     )
@@ -31,6 +31,7 @@ function Score() {
 
   return (
     <>
+    {isVisible === true &&
     <table className="m-auto border-2 border-slate-400">
       <thead>
           <tr>
@@ -40,16 +41,18 @@ function Score() {
       <tbody>
         {turns?.map((turn, id) => (
           <tr key={id}>
-            <td className="py-2 px-4 font-bold">Round {id} :</td>
-            <td className="py-2 px-4">
-              {turn.winner}
-              {console.log({user1})}
-              {console.log(user1)}
-            </td>
-          </tr> 
-        ))}         
+            <td className="py-2 px-4 border-y-2 border-slate-400 font-bold">Round {id+1} :</td>
+            <td className={turn.winner === "user1" ? "bg-green-300 py-2 px-4 border-y-2 border-slate-400" : "py-2 px-4 border-y-2 border-slate-400"}>{turn.user1 && user1}</td>
+            <td className={turn.winner === "user2" ? "bg-green-300 py-2 px-4 border-y-2 border-slate-400" : "py-2 px-4 border-y-2 border-slate-400"}>{turn.user2 && user2}</td>
+          </tr>  
+        ))}
+        {winner !== undefined && 
+          <tr>
+            <td className="py-2 px-4"colSpan="3">The Winner is <b>{winner}</b>.</td>
+          </tr>}
       </tbody>
     </table>
+    }
     </>
   );
   
