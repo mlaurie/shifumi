@@ -1,35 +1,37 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import Button from '../lib/ButtonMove';
-import paper from '../../images/paper.png';
-import scissors from '../../images/scissors.png';
-import rock from '../../images/rock.png';
+import paper from '../../assets/images/paper.png';
+import scissors from '../../assets/images/scissors.png';
+import rock from '../../assets/images/rock.png';
 import Score from './Score';
 import RevealCard from './RevealCard';
+import { fetchMatch } from '../../data/api';
 
 function Match() {
   const { id } = useParams();
-  const [isVisible, setIsVisible] = useState(true);
+  const [isScoreVisible, setIsScoreVisible] = useState(false);
+  const [isMoveVisible, setIsMoveVisible] = useState(false);
+  const [error, setError] = useState()
   const [turn, setTurn] = useState();
 
   useEffect(() => {
-    fetch(`http://fauques.freeboxos.fr:3000/matches/${id}`, {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token")
-      },
-    })
-      .then((response) => response.json()
-      .then((match) => {
-        console.log(match.turns)
-        match.turns[match.turns.length -1].winner && typeof match.turns[match.turns.length -1].winner !== "undefined" ? setTurn(match.turns.length + 1) : setTurn(match.turns.length);
-        match.winner && typeof match.winner !== "undefined" && setIsVisible(false);
-        typeof match.winner !== null && setIsVisible(false);
-      })
-      .catch((error) => console.log(error))
-    )
-  }, [])
+    async function loadMatch () {
+      try {
+        const match = await fetchMatch(id)
+        match.turns.length > 0 && setIsScoreVisible(true)
+        typeof (match.winner) === "undefined" && setIsMoveVisible(true)
+        //console.log(match.turns)
+        //console.log(match.turns[match.turns.length -1])
+        //console.log(match.turns[match.turns.length -1].winner)
+        //match.turns[match.turns.length -1] && typeof match.turns[match.turns.length -1].winner !== "undefined" ? setTurn(match.turns.length + 1) : setTurn(match.turns.length);
+      } catch (err) {
+        setError(err)
+      }
+    }
+
+    loadMatch()
+  }, [id])
 
   return (
     <>
@@ -37,7 +39,7 @@ function Match() {
       <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-md">
         <div className='space-y-12'>
           <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Choose a move</h1>
-          { isVisible &&
+          { isMoveVisible &&
           <div className="flex h-44 justify-center items-center">
             <div className="self-end">
               <Button turn={turn} title="paper" img={paper}/>
@@ -49,7 +51,7 @@ function Match() {
               <Button turn={turn} title="rock" img={rock}/>
             </div>
           </div>}
-          <Score />
+          { isScoreVisible && <Score /> }
         </div>
       </div>
     </>
