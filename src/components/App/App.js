@@ -1,24 +1,48 @@
 import './App.css';
 import React from 'react';
-import {Route, Routes, Navigate, BrowserRouter as Router} from 'react-router-dom';
-
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Login from '../Security/Login'
 import MatchList from '../Match/MatchList'
 import Match from '../Match/Match'
+import Logout from "../Security/Logout"
 
 function App() {
+
+  const token = localStorage.getItem("token");
+  
+  if (token !== null){
   return (
-    <div className="App">
-      <Router>
-        <Routes>
+    <>
+      <Logout />
+      <div className="App">
+     
+        <Routes> 
           <Route path="/login" element={<Login />} />
           <Route path="/matches" element={<MatchList />} />
-          <Route path="/match/:matchId" element={<Match />} />
+          <Route path="/match/:id" element={<Match />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
-      </Router>
-    </div>
+      </div>
+    </>
   );
+  }
+
+else {
+  return (
+    <>
+      <Logout />
+      <div className="App">
+     
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      
+     
+      </div>
+    </>
+  );
+}
 }
 
 export default App;
