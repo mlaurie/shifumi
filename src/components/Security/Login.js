@@ -1,9 +1,11 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { login } from '../../data/api'
+import { getConnectedUser } from '../../data/storage'
 
 function Login() {
     const navigate = useNavigate();
+    const connectedUser = getConnectedUser()
 
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -29,10 +31,12 @@ function Login() {
         } catch (err) {
             setError(err)
             setIsLoading(false)
-        } 
+        }
     }, [navigate, username, password])
 
-    return (
+    return connectedUser
+      ? <Navigate to='/matches' />
+      : (
         <form onSubmit={handleLogin}>
             <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-sm">
                 <div className="space-y-6">

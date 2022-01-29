@@ -1,35 +1,28 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { getConnectedUser } from "../../data/storage";
 
-function Button({ title, img, turn }){
+function Button({ move, img, matchId, turnId }){
+  const connectedUser = getConnectedUser()
 
-  const { id } = useParams();
-  const [move, setMove] = useState({move:""});
-
-  function handleClick(e) {
-    setMove(e.target.dataset.move)
-    fetch(`http://fauques.freeboxos.fr:3000/matches/${id}/turns/${turn}`, {
+  function handleClick() {
+    fetch(`http://fauques.freeboxos.fr:3000/matches/${matchId}/turns/${turnId}`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token")
+        "Authorization": `Bearer ${connectedUser?.token}`
       },
-      body: JSON.stringify(move)
-    })
-      .then((response) => response.json()
-      .then(() => {})
-    )
+      body: JSON.stringify({move})
+    }).then()
   }
-  
+
   return (
     <button className="w-24" >
-      <img 
-        data-move={title}
-        onClick={(e) => handleClick(e)} 
-        className="hover:cursor-pointer hover:origin-center hover:scale-110 hover:duration-150 hover:rotate-12" 
-        src={img} 
-        alt={title}/>
-      {title}
+      <img
+        data-move={move}
+        onClick={(e) => handleClick(e)}
+        className="hover:cursor-pointer hover:origin-center hover:scale-110 hover:duration-150 hover:rotate-12"
+        src={img}
+        alt={move}/>
+      {move}
     </button>
   );
 

@@ -1,3 +1,7 @@
+import { EventSourcePolyfill } from 'event-source-polyfill';
+
+import { setConnectedUser, unsetConnectedUser, getConnectedUser } from './storage'
+
 const apiUrl = 'http://fauques.freeboxos.fr:3000'
 
 export const login = async (username, password) => {
@@ -15,21 +19,21 @@ export const login = async (username, password) => {
     throw data
   }
 
-  localStorage.setItem("username", username);
-  localStorage.setItem("token", data.token);
+  setConnectedUser({ username, token: data.token })
 }
 
 export const logout = () => {
-  localStorage.removeItem("username");
-  localStorage.removeItem("token");
+  unsetConnectedUser()
 }
 
 export const fetchMatches = async () => {
+  const connectedUser = getConnectedUser()
+  const token = connectedUser?.token
   const response = await fetch(`${apiUrl}/matches`, {
     method: "GET",
     headers: {
       "content-type": "application/json",
-      "Authorization": `Bearer ${localStorage.getItem("token")}`
+      "Authorization": `Bearer ${token}`
     },
   })
 
@@ -43,11 +47,13 @@ export const fetchMatches = async () => {
 }
 
 export const fetchMatch = async (id) => {
+  const connectedUser = getConnectedUser()
+  const token = connectedUser?.token
   const response = await fetch(`${apiUrl}/matches/${id}`, {
     method: "GET",
     headers: {
       "content-type": "application/json",
-      "Authorization": `Bearer ${localStorage.getItem("token")}`
+      "Authorization": `Bearer ${token}`
     },
   })
 
@@ -61,11 +67,13 @@ export const fetchMatch = async (id) => {
 }
 
 export const postMatch = async () => {
+  const connectedUser = getConnectedUser()
+  const token = connectedUser?.token
   const response = await fetch(`${apiUrl}/matches`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "Authorization": `Bearer ${localStorage.getItem("token")}`
+      "Authorization": `Bearer ${token}`
     },
   })
 
@@ -75,6 +83,16 @@ export const postMatch = async () => {
     throw data
   }
 
-  return data 
+  return data
+}
 
+export const fetchMatchEvents = (id) => {
+  const connectedUser = getConnectedUser()
+  const token = connectedUser?.token
+
+  return new EventSourcePolyfill(`${apiUrl}/matches/${id}/subscribe`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
 }
