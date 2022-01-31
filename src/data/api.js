@@ -86,6 +86,27 @@ export const postMatch = async () => {
   return data
 }
 
+export const postTurn = async (matchId,  turnId, move) => {
+  const connectedUser = getConnectedUser()
+  const token = connectedUser?.token
+  const response = await fetch(`${apiUrl}/matches/${matchId}/turns/${turnId}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({move})
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw data
+  }
+
+  return data
+}
+
 export const fetchMatchEvents = (id) => {
   const connectedUser = getConnectedUser()
   const token = connectedUser?.token

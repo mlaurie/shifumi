@@ -1,24 +1,23 @@
-import { getConnectedUser } from "../../data/storage";
+import { useCallback } from "react";
+import { useState } from "react";
+import { postTurn } from '../../data/api';
 
 function MatchMoveItem({ move, img, matchId, turnId }){
-  const connectedUser = getConnectedUser()
+  const [error, setError] = useState()
 
-  function handleClick() {
-    fetch(`http://fauques.freeboxos.fr:3000/matches/${matchId}/turns/${turnId}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": `Bearer ${connectedUser?.token}`
-      },
-      body: JSON.stringify({move})
-    }).then()
-  }
+  const handleClick = useCallback( async () => {
+    try {
+      const turn = await postTurn(matchId, turnId, move)
+    } catch (err) {
+      setError(err)
+    }
+  }, [matchId, move, turnId])
 
   return (
     <button className="w-24" >
       <img
         data-move={move}
-        onClick={(e) => handleClick(e)}
+        onClick={handleClick}
         className="hover:cursor-pointer hover:origin-center hover:scale-110 hover:duration-150 hover:rotate-12"
         src={img}
         alt={move}/>

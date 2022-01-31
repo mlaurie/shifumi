@@ -14,6 +14,8 @@ function Match() {
   const [turnId, setTurnId] = useState();
   const [player1Score, setPlayer1Score] = useState();
   const [player2Score, setPlayer2Score] = useState();
+  const [usernamePlayer1, setUsernamePlayer1] = useState();
+  const [usernamePlayer2, setUsernamePlayer2] = useState();
 
   /**
    * Load match data when mounting the component
@@ -56,6 +58,16 @@ function Match() {
     }
   }, [match])
 
+  useEffect(() => {
+    if (match && Array.isArray(match.turns)) {
+      const usernamePlayer1 = match.user1.username
+      const usernamePlayer2 = match.user2.username
+
+      setUsernamePlayer1(usernamePlayer1)
+      setUsernamePlayer2(usernamePlayer2)
+    }
+  }, [match])
+
   /**
    * Calculate scores when match data is retrieved
    */
@@ -88,20 +100,19 @@ function Match() {
             )}
           </div>
           <MatchMoves turnId={turnId} matchId={matchId}/>
-          <MatchScore player1Score={player1Score} player2Score={player2Score}/>
+          <MatchScore usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} player1Score={player1Score} player2Score={player2Score}/>
         </div>
       </div>
       <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-md">
         <div className='space-y-12'>
           <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">History</h1>
           {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
-            <MatchHistory key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
+            <MatchHistory usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
           ))}
         </div>
       </div>
     </>
   );
-
 }
 
 export default Match;
