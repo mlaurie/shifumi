@@ -1,12 +1,11 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from "react";
-import Button from '../lib/ButtonMove';
-import paper from '../../assets/images/paper.png';
-import scissors from '../../assets/images/scissors.png';
-import rock from '../../assets/images/rock.png';
 import RevealCard from './RevealCard';
 import { fetchMatch, fetchMatchEvents } from '../../data/api';
 import Logout from "../Security/Logout";
+import MatchScore from "./MatchScore"
+import MatchHistory from './MatchHistory';
+import MatchMoves from './MatchMoves';
 
 function Match() {
   const { matchId } = useParams();
@@ -16,6 +15,9 @@ function Match() {
   const [player1Score, setPlayer1Score] = useState();
   const [player2Score, setPlayer2Score] = useState();
 
+  /**
+   * Load match data when mounting the component
+   */
   useEffect(() => {
     async function loadMatch () {
       try {
@@ -29,12 +31,19 @@ function Match() {
     loadMatch()
   }, [matchId])
 
+  /**
+   * Subscribe to match notifications when mounting the component
+   * Close subscription when component is unmounted
+   */
   useEffect(() => {
     const stream = fetchMatchEvents(matchId)
 
     return () => stream.close()
   }, [matchId])
 
+  /**
+   * Calculate current turn ID when match data is retrieved
+   */
   useEffect(() => {
     if (match && Array.isArray(match.turns)) {
       const lastTurnIndex = Math.max(match.turns.length - 1, 0)
@@ -47,6 +56,9 @@ function Match() {
     }
   }, [match])
 
+  /**
+   * Calculate scores when match data is retrieved
+   */
   useEffect(() => {
     if (match && Array.isArray(match.turns)) {
       const score1 = match.turns.reduce((score, turn) => score + (turn?.winner === 'user1' ? 1 : 0), 0)
@@ -75,40 +87,15 @@ function Match() {
               <h2 className="text-center text-xl font-semibold text-gray-600">Turn {turnId}</h2>
             )}
           </div>
-          <div className="flex h-44 justify-center items-center">
-            <div className="self-end">
-              <Button matchId={matchId} turnId={turnId} move="paper" img={paper}/>
-            </div>
-            <div className="self-start">
-              <Button matchId={matchId} turnId={turnId} move="scissors" img={scissors}/>
-            </div>
-            <div className="self-end">
-              <Button matchId={matchId} turnId={turnId} move="rock" img={rock}/>
-            </div>
-          </div>
-          <table className="m-auto border-2 border-slate-400">
-            <thead>
-                <tr className="bg-gradient-to-tr from-blue-600 to-indigo-600">
-                  <th className="text-white px-8 border-2 border-slate-400">Player 1</th>
-                  <th className="text-white px-8 border-2 border-slate-400">Player 2</th>
-                </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="py-2 px-4 border-2 border-slate-400">{player1Score}</td>
-                <td className="py-2 px-4 border-2 border-slate-400">{player2Score}</td>
-              </tr>
-            </tbody>
-          </table>
+          <MatchMoves turnId={turnId} matchId={matchId}/>
+          <MatchScore player1Score={player1Score} player2Score={player2Score}/>
         </div>
       </div>
-
       <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-md">
         <div className='space-y-12'>
           <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">History</h1>
-
           {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
-            <div style={{ marginTop: 0 }} key={index}>Turn {index + 1} => player 1 : {turn.user1} | player 2 : {turn.user2}</div>
+            <MatchHistory key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
           ))}
         </div>
       </div>

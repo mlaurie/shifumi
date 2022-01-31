@@ -1,6 +1,6 @@
 import { getConnectedUser } from "../../data/storage";
 
-function Button({ move, img, matchId, turnId }){
+function MatchMoveItem({ move, img, matchId, turnId }){
   const connectedUser = getConnectedUser()
 
   function handleClick() {
@@ -28,4 +28,4 @@ function Button({ move, img, matchId, turnId }){
 
 }
 
-export default Button;
+export default MatchMoveItem;
