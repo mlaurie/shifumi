@@ -91,26 +91,41 @@ function Match() {
         <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">{match.winner.username}</h1>
       </div>
     )}
-      <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-md">
-        <div className='space-y-8'>
-          <div className='space-y-4'>
-            <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Choose a move</h1>
-            { turnId && (
-              <h2 className="text-center text-xl font-semibold text-gray-600">Turn {turnId}</h2>
-            )}
+    <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-6xl">
+      <div className='space-y-6'>
+        <div className='space-y-4'>
+          { turnId && turnId < 4 && (
+          <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Choose a move</h1>
+          )}
+          { turnId && turnId < 4 && (
+            <h2 className="text-center text-2xl font-semibold text-gray-600">Turn {turnId}</h2>
+          )}
+        </div>
+        { turnId && turnId < 4 && (
+          <div className="grid grid-cols-3">
+            <div>
+              <h2 className='mb-4 text-xl'>{usernamePlayer1}</h2>
+              <MatchMoves turnId={turnId} matchId={matchId}/>
+            </div>
+            <div>
+              oo
+            </div>
+            <div>
+            <h2 className='mb-4 text-xl'>{usernamePlayer2}</h2>
+              <MatchMoves turnId={turnId} matchId={matchId}/>
+            </div>
           </div>
-          <MatchMoves turnId={turnId} matchId={matchId}/>
-          <MatchScore usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} player1Score={player1Score} player2Score={player2Score}/>
-        </div>
+        )}
+        <h2 className="text-center my-8 text-xl font-semibold text-gray-600">Score</h2>
+        <MatchScore usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} player1Score={player1Score} player2Score={player2Score}/>
       </div>
-      <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-md">
-        <div className='space-y-12'>
-          <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">History</h1>
-          {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
-            <MatchHistory usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
-          ))}
-        </div>
+      <h2 className="text-center my-8 text-xl font-semibold text-gray-600">History</h2>
+      <div className='space-y-4'>
+        {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
+          <MatchHistory usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
+        ))}
       </div>
+    </div>
     </>
   );
 }

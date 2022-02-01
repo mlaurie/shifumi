@@ -14,7 +14,7 @@ function MatchMoveItem({ move, img, matchId, turnId }){
   }, [matchId, move, turnId])
 
   return (
-    <button className="w-24" >
+    <button className="w-20" >
       <img
         data-move={move}
         onClick={handleClick}
