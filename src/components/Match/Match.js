@@ -6,6 +6,9 @@ import Logout from "../Security/Logout";
 import MatchScore from "./MatchScore"
 import MatchHistory from './MatchHistory';
 import MatchMoves from './MatchMoves';
+import rock from '../../assets/images/rock.png';
+import MatchMovePlayed from './MatchMovePlayed';
+import paper from '../../assets/images/paper.png';
 
 function Match() {
   const { matchId } = useParams();
@@ -91,35 +94,27 @@ function Match() {
         <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">{match.winner.username}</h1>
       </div>
     )}
-    <div className="bg-white px-10 py-8 rounded-xl w-screen shadow-md max-w-6xl">
+    <div className="bg-white px-10 py-8 rounded-xl min-w-[50%] shadow-md">
       <div className='space-y-6'>
         <div className='space-y-4'>
           { turnId && turnId < 4 && (
-          <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Choose a move</h1>
+            <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Choose a move</h1>
           )}
           { turnId && turnId < 4 && (
             <h2 className="text-center text-2xl font-semibold text-gray-600">Turn {turnId}</h2>
           )}
         </div>
         { turnId && turnId < 4 && (
-          <div className="grid grid-cols-3">
-            <div>
-              <h2 className='mb-4 text-xl'>{usernamePlayer1}</h2>
-              <MatchMoves turnId={turnId} matchId={matchId}/>
-            </div>
-            <div>
-              oo
-            </div>
-            <div>
-            <h2 className='mb-4 text-xl'>{usernamePlayer2}</h2>
-              <MatchMoves turnId={turnId} matchId={matchId}/>
-            </div>
+          <div className="grid grid-cols-3 gap-x-20">
+            <MatchMoves usernamePlayer1={usernamePlayer1} turnId={turnId} matchId={matchId}/>
+            <MatchMovePlayed moveUsername1={rock} moveUsername2={paper}/>
+            <MatchMoves usernamePlayer2={usernamePlayer2} turnId={turnId} matchId={matchId}/>
           </div>
         )}
         <h2 className="text-center my-8 text-xl font-semibold text-gray-600">Score</h2>
         <MatchScore usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} player1Score={player1Score} player2Score={player2Score}/>
       </div>
-      <h2 className="text-center my-8 text-xl font-semibold text-gray-600">History</h2>
+      <h2 className="text-center my-6 text-xl font-semibold text-gray-600">History</h2>
       <div className='space-y-4'>
         {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
           <MatchHistory usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
