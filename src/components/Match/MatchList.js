@@ -1,15 +1,21 @@
 import {useState, useEffect, useCallback} from "react";
+import { useNavigate } from "react-router-dom";
+
 import Loader from "../Style/Loader";
 import { fetchMatches, postMatch } from '../../data/api'
 import MatchListItem from "./MatchListItem";
 import Logout from "../Security/Logout";
 
 function MatchList() {
+  const navigate = useNavigate()
   const [matches, setMatches] = useState([]);
   const [error, setError] = useState()
   const [isCreateButtonVisible, setIsCreateButtonVisible] = useState(true);
   const [isDataLoading, setDataLoading] = useState(false)
 
+  /**
+   * Load matches data when mounting the component
+   */
   useEffect(() => {
     async function loadMatches() {
       setDataLoading(true)
@@ -27,15 +33,21 @@ function MatchList() {
     loadMatches()
   }, [])
 
+  /**
+   * Hide button when a match is waiting for a user2
+   */
   useEffect(() => {
     const isInvisible = matches.some(match => match.user2 === null)
     setIsCreateButtonVisible(!isInvisible)
   }, [matches])
 
+  /**
+   * Onclick create a match and redirect to the match
+   */
   const handleClickCreate = useCallback( async () => {
     try {
       const match = await postMatch()
-      setMatches([...matches, match])
+      navigate(`/match/${match._id}`);
     } catch (err) {
       setError(err)
     }
