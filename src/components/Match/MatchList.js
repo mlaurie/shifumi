@@ -64,8 +64,13 @@ function MatchList() {
               <Loader />
             ) : (
               <div className="flex flex-col items-center text-xl text-gray-600 font-semibold">
+                <h2>Other matches</h2>
                 {matches?.map((match) => (
-                  <MatchListItem key={match._id} id={match._id} user1={match.user1} user2={match.user2} />
+                  match.turns && !match.winner && <MatchListItem key={match._id} id={match._id} user1={match.user1} user2={match.user2} />
+                ))}
+                <h2>Matches ended</h2>
+                {matches?.map((match) => (
+                  match.winner && <MatchListItem key={match._id} id={match._id} user1={match.user1} user2={match.user2} />
                 ))}
               </div>
             )}
