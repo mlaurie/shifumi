@@ -8,6 +8,8 @@ import MatchHistory from './MatchHistory';
 import MatchMoves from './MatchMoves';
 import Loader from "../Style/Loader";
 import { getConnectedUser } from '../../data/storage';
+import BackButton from "../Style/BackButton"; 
+import firework from '../../assets/images/firework.png';
 
 const MatchEventTypes = {
   Player1Join: "PLAYER1_JOIN",
@@ -255,13 +257,15 @@ function Match() {
 
   return (
     <>
+    <BackButton />
     <Logout />
     <div className="bg-white px-10 py-8 rounded-xl min-w-[50%] shadow-md">
       <div className='space-y-6'>
         { matchWinner && (
-        <div>
-          <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">Winner</h1>
-          <h1 className="text-center text-3xl font-semibold text-indigo-600 text-bold">{matchWinner}</h1>
+        <div className='relative'>
+          <h1 className="text-center text-3xl font-semibold py-10 text-indigo-600 text-bold">The Winner is {matchWinner}.
+            <img className="w-56 absolute animate-pulse" src={firework}/>
+          </h1>
         </div>
       )}
         <div className='space-y-4'>
