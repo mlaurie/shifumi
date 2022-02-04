@@ -17,13 +17,13 @@ function MatchMoveItem({ move, img, matchId, turnId }){
       setError(err)
     }
   }, [matchId, move, turnId])
-  
+
   return (
-    <button className="w-16" >
+    <button className={canClick ? "w-16" : " w-16 hover:cursor-default"}>
       <img
         data-move={move}
         onClick={canClick ? handleClick : undefined}
-        className="hover:cursor-pointer hover:origin-center hover:scale-110 hover:duration-150 hover:rotate-12"
+        className={canClick ? "hover:cursor-pointer hover:origin-center hover:scale-110 hover:duration-150 hover:rotate-12" : "hover:cursor-default"}
         src={img}
         alt={move}/>
       {move}

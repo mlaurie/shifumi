@@ -21,6 +21,21 @@ const MatchEventTypes = {
 
 const MATCH_MAXIMUM_TURNS = 3
 
+/**
+ * Match page that display current match state
+ *
+ * Match state is built from GET match response with multiple useEffects
+ *
+ * If match is not finished (no winner yet),
+ * it subscribes to notifications system to refresh its state in real time when possible
+ *    => impossible to calculate state from PLAYER1_MOVED
+ *    => impossible to calculate state from PLAYER2_MOVED
+ *    => impossible to calculate state from TURN_ENDED
+ * so for these 3 events we need re-fetch the entire match
+ *
+ * @returns {JSX.Element}
+ * @constructor
+ */
 function Match() {
   let eventsStream
   const { matchId } = useParams();
@@ -32,7 +47,7 @@ function Match() {
   const [usernamePlayer1, setUsernamePlayer1] = useState('');
   const [usernamePlayer2, setUsernamePlayer2] = useState('');
   const [matchWinner, setMatchWinner] = useState('');
-  const connectedUserUsername = getConnectedUser().username
+  const connectedUser = getConnectedUser()
 
   async function loadMatch() {
     try {
@@ -42,13 +57,6 @@ function Match() {
       setError(err)
     }
   }
-
-  /**
-   * Load match data when mounting the component
-   */
-  useEffect(() => {
-    loadMatch()
-  }, [matchId])
 
   /**
    * Callback when receiving Player1Join event
@@ -68,6 +76,9 @@ function Match() {
 
   /**
    * Callback when receiving Player1Moved event
+   *
+   * This event gives us no exploitable information about the move,
+   * so we need to fetch the entire match to recalculate the corresponding state from useEffects
    * @param {number} turn
    * @returns {Promise<void>}
    */
@@ -77,6 +88,9 @@ function Match() {
 
   /**
    * Callback when receiving Player2Moved event
+   *
+   * This event gives us no exploitable information about the move,
+   * so we need to fetch the entire match to recalculate the corresponding state from useEffects
    * @param {number} turn
    * @returns {Promise<void>}
    */
@@ -94,15 +108,15 @@ function Match() {
 
   /**
    * Callback when receiving TurnEnded event
+   *
+   * This event gives us no exploitable information about the move,
+   * so we need to fetch the entire match to recalculate the corresponding state from useEffects
    * @param {number} newTurnId
    * @param {string} winner
    */
-  const onTurnEndedEvent = useCallback(({ newTurnId, winner }) => {
-    if (winner === 'user1') setPlayer1Score(player1Score + 1)
-    else if (winner === 'user2') setPlayer2Score(player2Score + 1)
-
-    setTurnId(newTurnId)
-  }, [setPlayer1Score, setPlayer2Score, player1Score, player2Score])
+  const onTurnEndedEvent = async ({ newTurnId, winner }) => {
+    await loadMatch()
+  }
 
   /**
    * Callback when receiving MatchEnded event
@@ -136,24 +150,13 @@ function Match() {
         onNewTurnEvent(event.payload)
         break
       case MatchEventTypes.TurnEnded:
-        onTurnEndedEvent(event.payload)
+        await onTurnEndedEvent(event.payload)
         break
       case MatchEventTypes.MatchEnded:
         onMatchEndedEvent(event.payload)
         break
     }
   }, [onTurnEndedEvent])
-
-  /**
-   * Handle an array of match events
-   * @param {{ type: string, payload: object }[]} events
-   * @returns {Promise<void>}
-   */
-  const handleEvents = useCallback(async (events) => {
-    for (const event of events) {
-      await handleEvent(event)
-    }
-  }, [handleEvent])
 
   /**
    * Callback triggered when match events stream connects
@@ -175,26 +178,80 @@ function Match() {
     console.log('onmessage', message)
     const data = JSON.parse(message.data)
 
-    // When first opening the stream connection, all past event history are sent by the server as an array
-    if (Array.isArray(data)) {
-      await handleEvents(data)
-    } else {
+    // When first opening the stream connection, all past event history are sent by the server as an array, and we don't want to handle them
+    if (!Array.isArray(data)) {
       await handleEvent(data)
     }
   }, [handleEvent])
 
   /**
-   * Subscribe to match notifications when mounting the component
+   * Load match data when mounting the component
+   */
+  useEffect(() => {
+    loadMatch()
+  }, [matchId])
+
+  /**
+   * Calculate current turn ID when match data is retrieved
+   */
+  useEffect(() => {
+    if (match && Array.isArray(match.turns)) {
+      const lastTurnIndex = Math.max(match.turns.length - 1, 0)
+      const lastTurnId = lastTurnIndex + 1
+      const lastTurn = match.turns[lastTurnIndex]
+      const isLastTurnFinished = lastTurn && lastTurn.user1 && lastTurn.user2
+      const currentTurnId = isLastTurnFinished ? lastTurnId + 1 : lastTurnId
+
+      setTurnId(currentTurnId)
+    }
+  }, [match])
+
+  /**
+   * Calculate usernames when match data is retrieved
+   */
+  useEffect(() => {
+    if (match) {
+      setUsernamePlayer1(match.user1?.username)
+      setUsernamePlayer2(match.user2?.username)
+    }
+  }, [match])
+
+  /**
+   * Calculate scores when match data is retrieved
+   */
+  useEffect(() => {
+    if (match && Array.isArray(match.turns)) {
+      const score1 = match.turns.reduce((score, turn) => score + (turn?.winner === 'user1' ? 1 : 0), 0)
+      const score2 = match.turns.reduce((score, turn) => score + (turn?.winner === 'user2' ? 1 : 0), 0)
+
+      setPlayer1Score(score1)
+      setPlayer2Score(score2)
+    }
+  }, [match])
+
+  /**
+   * Calculate match winner when match data is retrieved
+   */
+  useEffect(() => {
+    if (match?.winner) {
+      setMatchWinner(match.winner.username)
+    }
+  }, [match])
+
+  /**
+   * Subscribe to match notifications when mounting the component if match is not finished (no winner yet)
    * Close subscription when component is unmounted
    */
   useEffect(() => {
-    eventsStream = fetchMatchEvents(matchId)
-    eventsStream.onopen = onMatchEventsStreamOpen
-    eventsStream.onerror = onMatchEventsStreamError
-    eventsStream.onmessage = onMatchEventsStreamMessage
+    if (match && !match?.winner) {
+      eventsStream = fetchMatchEvents(match._id)
+      eventsStream.onopen = onMatchEventsStreamOpen
+      eventsStream.onerror = onMatchEventsStreamError
+      eventsStream.onmessage = onMatchEventsStreamMessage
+    }
 
     return () => eventsStream?.close()
-  }, [matchId])
+  }, [match])
 
   return (
     <>
@@ -217,9 +274,9 @@ function Match() {
         </div>
         { turnId && turnId <= MATCH_MAXIMUM_TURNS && (
           <div className="grid grid-cols-2 gap-x-20">
-            <MatchMoves usernamePlayer1={usernamePlayer1} turnId={turnId} matchId={matchId} card={usernamePlayer1 === connectedUserUsername ? "visible" : "secret" }/>
+            <MatchMoves usernamePlayer1={usernamePlayer1} turnId={turnId} matchId={matchId} card={usernamePlayer1 === connectedUser.username ? "visible" : "secret" }/>
             { usernamePlayer2
-              ? <MatchMoves usernamePlayer2={usernamePlayer2} turnId={turnId} matchId={matchId} card={usernamePlayer2 === connectedUserUsername ? "visible" : "secret" }/>
+              ? <MatchMoves usernamePlayer2={usernamePlayer2} turnId={turnId} matchId={matchId} card={usernamePlayer2 === connectedUser.username ? "visible" : "secret" }/>
               : <Loader />
             }
           </div>
@@ -229,9 +286,7 @@ function Match() {
       </div>
       <h2 className="text-center my-6 text-xl font-semibold text-gray-600">History</h2>
       <div className='space-y-4'>
-        {Array.isArray(match?.turns) && match.turns.map((turn, index) => (
-          <MatchHistory usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} key={index} index={index} turnUser1={turn.user1} turnUser2={turn.user2} />
-        ))}
+        <MatchHistory match={match} usernamePlayer1={usernamePlayer1} usernamePlayer2={usernamePlayer2} />
       </div>
     </div>
     </>
