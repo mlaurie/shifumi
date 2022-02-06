@@ -2,11 +2,11 @@ import './App.css';
 import React from 'react';
 import {Route, Routes, Navigate, BrowserRouter as Router} from 'react-router-dom';
 
-import Login from '../Security/Login'
-import PrivateRouteWrapper from '../Security/PrivateRouteWrapper';
-import LoginRouteWrapper from '../Security/LoginRouteWrapper';
-import MatchList from '../Match/MatchList'
-import Match from '../Match/Match'
+import Login from '../features/Auth/Login'
+import PrivateRouteWrapper from '../features/Auth/PrivateRouteWrapper';
+import LoginRouteWrapper from '../features/Auth/LoginRouteWrapper';
+import MatchList from '../features/MatchList/MatchList'
+import Match from '../features/Match/Match'
 
 /**
  * Main application component handling the app routing with additional logic

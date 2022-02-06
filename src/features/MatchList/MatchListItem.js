@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { useNavigate } from 'react-router-dom'; 
-import Loader from "../Style/Loader";
+import { useNavigate } from 'react-router-dom';
+import Loader from "../../shared/components/loaders/Loader";
 
 function MatchListItem ({user1, user2, id}) {
   const navigate = useNavigate();

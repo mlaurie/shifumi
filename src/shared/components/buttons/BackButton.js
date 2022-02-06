@@ -1,10 +1,9 @@
 import { useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../data/api'
 
 function BackButton () {
   const navigate = useNavigate();
-  
+
   const handleClick = useCallback(() => {
     navigate('/matches');
   }, [navigate])
